@@ -17,7 +17,9 @@ import io.restassured.specification.RequestSpecification;
 
 public class ApiHelper {
 
-	String token="Bearer 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";
+
+	String token="Bearer ";
+
 	RequestSpecification reqSpec=RestAssured.given().baseUri("https://api.github.com/")
 			 .header("Authorization",token);
 	
