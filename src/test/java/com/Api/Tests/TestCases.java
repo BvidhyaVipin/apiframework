@@ -43,7 +43,7 @@ public class TestCases {
 		 
 	 }
 	
-	@Test(priority = 2, description="get a single repo details from github")
+	@Test(priority = 0, description="get a single repo details from github")
 	public void getASingleRepo() {
 		Response res=API.getASingleRepo(repo);
 		res.prettyPrint();
@@ -62,7 +62,7 @@ public class TestCases {
 		
 	}
 	
-	@Test(priority=3,description="get a single repo negative case non existing repo ")
+	@Test(priority=1,description="get a single repo negative case non existing repo ")
 	public void getASingleRepoWithNonExistingName() {
 		Response res=API.getASingleRepo(repo+"r");
 		NonExistingRepoResponsePojo resp=res.as(new TypeRef<NonExistingRepoResponsePojo>() {});
