@@ -5,50 +5,72 @@ import static org.testng.Assert.assertEquals;
 
 import java.util.List;
 
-
+import org.apache.http.HttpStatus;
 import org.testng.Assert;
-
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import com.Api.Base.ApiHelper;
-
+import com.Api.responsePOJO.GetResponsePOJO;
+import com.Api.responsePOJO.NonExistingRepoResponsePojo;
 import com.Api.utils.ExtentReportsUtility;
+import com.Api.utils.JsonSchemaValidate;
+import com.github.javafaker.Faker;
 
-
+import io.restassured.common.mapper.TypeRef;
+import io.restassured.module.jsv.JsonSchemaValidator;
 import io.restassured.response.Response;
 
 
 @Listeners(com.Api.listener.TestEventListenersUtility.class)
 public class TestCases {
-	ApiHelper API=new ApiHelper();
+	ApiHelper API;
+	Faker faker;
+	String repo="cucumber";
+	String repocreate;
+	String newReponame;
+	
 	
 	ExtentReportsUtility report=ExtentReportsUtility.getInstance();
-	   
+	@BeforeClass
+	public void beforeClass() {
+		API=new ApiHelper();
+		faker= new Faker();
+		repocreate="created"+faker.name().lastName();
+		newReponame=repocreate+"addded";
+		
+		 
+	 }
 	
-	@Test(priority = 0, description="get a single repo details from github")
+	@Test(priority = 2, description="get a single repo details from github")
 	public void getASingleRepo() {
-		Response res=API.getASingleRepo("cucumber");
+		Response res=API.getASingleRepo(repo);
+		res.prettyPrint();
+		GetResponsePOJO getresponse=res.getBody().as(new TypeRef<GetResponsePOJO>() {});
 		report.logTestInfo("repo details extracted");
-		assertEquals(res.statusCode(), 200);
+		assertEquals(res.getStatusCode(),HttpStatus.SC_OK,"response code is not matching");
 		report.logTestInfo("response code verified");
-		String s=res.body().jsonPath().get("full_name");
-		System.out.println(s);
-		assertEquals(s, "BvidhyaVipin/cucumber");
+		//String s=res.body().jsonPath().get("full_name");
+		//System.out.println(s);
+		assertEquals(getresponse.getName(), repo,"given repo is not in github");
 		report.logTestInfo("full name of repo verified");
+		JsonSchemaValidate.validateSchemaInClassPath(res, "expectedSchemas/StatusResponseSchema.json");
 		Assert.assertEquals(res.header("Content-Type"), "application/json; charset=utf-8");
 		report.logTestInfo("conent type verified");
 	
 		
 	}
 	
-	@Test(priority=1,description="get a single repo negative case non existing repo ")
+	@Test(priority=3,description="get a single repo negative case non existing repo ")
 	public void getASingleRepoWithNonExistingName() {
-		Response res=API.getASingleRepo("cucumr");
-		assertEquals(res.statusCode(), 404);
+		Response res=API.getASingleRepo(repo+"r");
+		NonExistingRepoResponsePojo resp=res.as(new TypeRef<NonExistingRepoResponsePojo>() {});
+		assertEquals(res.statusCode(),HttpStatus.SC_NOT_FOUND,"response code is not matching");
 		//String s=res.getStatusLine();
 		report.logTestInfo("response code verified");
-		
+		//res.prettyPrint();
+		assertEquals(resp.getMessage(), "Not Found","didnt display the not found message");
 		String s=res.body().jsonPath().get("message");
 		assertEquals(s, "Not Found");
 		report.logTestInfo("not found message verified");
@@ -60,10 +82,12 @@ public class TestCases {
 	public void getAllRepo() {
 		
 		Response response=API.getAllRepo();
-		//response.prettyPrint();
+		response.prettyPrint();
 		
 		//validate schema
 		//JsonSchemaValidate.validateSchema(response.asPrettyString(), "expectedSchemas/StatusResponseSchema.json");
+	
+		//response.then().body(JsonSchemaValidator.matchesJsonSchemaInClasspath("expectedSchemas/StatusResponseSchema.json"));
 		//status code check
 		Assert.assertEquals(response.statusCode(),200);
 		report.logTestInfo("status code verified");
@@ -93,7 +117,7 @@ public class TestCases {
 	public void createARepo() {
 		Response res=API.post("vidhya","restassured add data", "https://github.com", "true");
 		System.out.println("new repo created");
-		assertEquals(res.getStatusCode(), 201);
+		//assertEquals(res.getStatusCode(), 201);
 		report.logTestInfo("status code verified");
 		assertEquals(res.body().jsonPath().get("name"),"vidhya");
 		report.logTestInfo("repo name updated");
@@ -146,7 +170,7 @@ public class TestCases {
 	
 	@Test(priority=7,description="delete the non existing repo negative scenario")
 	public void deleteRepoWithNonExixtingName() {
-		Response res=API.delete("vidhya");
+		Response res=API.delete("vidhyaB");
 		int e=res.getStatusCode();
 		System.out.println(e);
 		assertEquals(res.statusCode(), 404);

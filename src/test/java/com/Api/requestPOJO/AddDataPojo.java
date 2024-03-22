@@ -22,5 +22,4 @@ public class AddDataPojo {
 	    @JsonProperty(value="private") 
 	    public String myprivate;
 	
-
 }

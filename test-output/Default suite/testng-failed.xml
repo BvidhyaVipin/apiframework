@@ -5,11 +5,8 @@
     <classes>
       <class name="com.Api.Tests.TestCases">
         <methods>
-          <include name="deleteRepo"/>
-          <include name="getAllRepo"/>
-          <include name="updateRepo"/>
-          <include name="createARepoWithExixtingName"/>
-          <include name="createARepo"/>
+          <include name="beforeClass"/>
+          <include name="getASingleRepo"/>
         </methods>
       </class> <!-- com.Api.Tests.TestCases -->
     </classes>
